@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".sample.MainActivity">
+
+    <Button
+        android:id="@+id/btn_mode_case1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hook 生效"
+        />
+
+    <Button
+        android:id="@+id/mock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="模拟执行 sp耗时行为"
+        />
+
+    <Button
+        android:id="@+id/jump_to_secondActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="跳转到其他页面,触发waitToFinish"
+        />
+
+</LinearLayout>
