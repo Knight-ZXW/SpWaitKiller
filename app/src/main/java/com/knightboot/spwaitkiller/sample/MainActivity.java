@@ -2,7 +2,6 @@ package com.knightboot.spwaitkiller.sample;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,7 +9,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import com.knightboot.spwaitkiller.R;
 import com.knightboot.spwaitkiller.Reflection;
 import com.knightboot.spwaitkiller.SpWaitKiller;
 
@@ -18,7 +16,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends AppCompatActivity {

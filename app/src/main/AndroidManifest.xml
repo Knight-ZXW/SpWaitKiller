@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.knightboot.spwaitkiller">
+    package="com.knightboot.spwaitkiller.sample">
 
     <application
         android:allowBackup="true"
@@ -10,10 +10,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SpWaitKiller">
         <activity
-            android:name=".sample.SecondActivity"
+            android:name=".SecondActivity"
             android:exported="true" />
         <activity
-            android:name=".sample.MainActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
