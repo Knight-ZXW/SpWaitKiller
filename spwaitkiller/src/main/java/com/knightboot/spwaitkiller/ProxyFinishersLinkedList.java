@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class ProxyFinishersLinkedList<T> extends ConcurrentLinkedQueue<T> {
 
-    private ConcurrentLinkedQueue<T> sPendingWorkFinishers;
+    private final ConcurrentLinkedQueue<T> sPendingWorkFinishers;
     public ProxyFinishersLinkedList(ConcurrentLinkedQueue<T> sPendingWorkFinishers){
         this.sPendingWorkFinishers = sPendingWorkFinishers;
     }

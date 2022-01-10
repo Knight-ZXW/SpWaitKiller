@@ -3,14 +3,16 @@ package com.knightboot.spwaitkiller.sample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import com.knightboot.spwaitkiller.Reflection;
 import com.knightboot.spwaitkiller.SpWaitKiller;
+
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -24,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Reflection.unseal(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.addHiddenApiExemptions("");
+        }
         init();
     }
 

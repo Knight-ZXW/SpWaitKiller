@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,18 +20,34 @@ public class SpWaitKiller {
 
     private boolean worked;
 
-    private boolean neverWaitingFinishQueue;
-    private boolean neverProcessWorkOnMainThread;
+    private final boolean neverWaitingFinishQueue;
+    private final boolean neverProcessWorkOnMainThread;
 
-    private UnExpectExceptionCatcher unExpectExceptionCatcher;
+    private final UnExpectExceptionCatcher unExpectExceptionCatcher;
+    private int targetSdkVersion =0;
+    private Context mContext;
 
     private SpWaitKiller(SpWaitKiller.Builder builder) {
         if (builder.hiddenApiExempter == null) {
             builder.hiddenApiExempter = new DefaultHiddenApiExempter();
         }
+        if (builder.unExpectExceptionCatcher ==null){
+            builder.unExpectExceptionCatcher = new UnExpectExceptionCatcher() {
+                @Override
+                public void onException(Throwable ex) {
+                    Log.e("SpWaitKillerException","catch Exception \n"
+                            +Log.getStackTraceString(ex));
+                }
+            };
+        }
         this.hiddenApiExempter = builder.hiddenApiExempter;
         this.neverProcessWorkOnMainThread = builder.neverProcessWorkOnMainThread;
         this.neverWaitingFinishQueue = builder.neverWaitingFinishQueue;
+        this.mContext = builder.context;
+        this.unExpectExceptionCatcher =builder.unExpectExceptionCatcher;
+        this.targetSdkVersion =  this.mContext.getApplicationInfo().targetSdkVersion;
+
+
     }
 
     public static SpWaitKiller.Builder builder(Context context) {
@@ -76,6 +93,10 @@ public class SpWaitKiller {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
              || Build.VERSION.SDK_INT >Build.VERSION_CODES.R) return;
 
+            if (targetSdkVersion>=Build.VERSION_CODES.R){
+                this.hiddenApiExempter.exempt(mContext);
+            }
+
             Method method = QueuedWorkClass.getDeclaredMethod("getHandler");
             method.setAccessible(true);
 
@@ -102,6 +123,8 @@ public class SpWaitKiller {
     public static class Builder {
         private boolean neverWaitingFinishQueue;
         private boolean neverProcessWorkOnMainThread;
+        private UnExpectExceptionCatcher unExpectExceptionCatcher;
+
 
         private Builder(Context context) {
             this.context = context;
@@ -119,6 +142,11 @@ public class SpWaitKiller {
 
         public Builder neverWaitingFinishQueue(boolean neverWaitingFinishQueue) {
             this.neverWaitingFinishQueue = neverWaitingFinishQueue;
+            return this;
+        }
+
+        public Builder unExpectExceptionCatcher(UnExpectExceptionCatcher unExpectExceptionCatcher){
+            this.unExpectExceptionCatcher =unExpectExceptionCatcher;
             return this;
         }
 

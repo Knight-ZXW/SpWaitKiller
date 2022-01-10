@@ -25,7 +25,8 @@ class ProxySWork<T> extends LinkedList<T> {
     @NonNull
     @Override
     public Object clone() {
-        LinkedList<Runnable> works = (LinkedList<Runnable>) super.clone();
+        LinkedList<Runnable> works = (LinkedList<Runnable>)  proxy.clone();
+        proxy.clear();
         sHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -35,6 +36,11 @@ class ProxySWork<T> extends LinkedList<T> {
             }
         });
         return new LinkedList<T>();
+    }
+
+    @Override
+    public boolean add(T t) {
+        return proxy.add(t);
     }
 
     // is thread safe
