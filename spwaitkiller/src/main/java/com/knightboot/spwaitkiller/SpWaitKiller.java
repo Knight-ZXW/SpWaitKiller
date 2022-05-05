@@ -1,5 +1,6 @@
 package com.knightboot.spwaitkiller;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -7,6 +8,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -78,10 +80,9 @@ public class SpWaitKiller {
                 ConcurrentLinkedQueue sPendingWorkFinishers = (ConcurrentLinkedQueue) sPendingWorkFinishersField.get(null);
                 ProxyFinishersLinkedList proxyedSFinishers = new ProxyFinishersLinkedList(sPendingWorkFinishers);
                 sPendingWorkFinishersField.set(null, proxyedSFinishers);
-            } else if (Build.VERSION.SDK_INT <=Build.VERSION_CODES.R){
+            } else{
                 Field sFinishersField = QueuedWorkClass.getDeclaredField("sFinishers");
                 sFinishersField.setAccessible(true);
-
                 LinkedList sFinishers = (LinkedList) sFinishersField.get(null);
                 ProxyFinishersList proxyedSFinishers = new ProxyFinishersList(sFinishers);
                 sFinishersField.set(null, proxyedSFinishers);
@@ -90,34 +91,63 @@ public class SpWaitKiller {
 
         if (neverProcessWorkOnMainThread) {
             // 通过调用 getHandler函数
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
-             || Build.VERSION.SDK_INT >Build.VERSION_CODES.R) return;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
             if (targetSdkVersion>=Build.VERSION_CODES.R){
                 this.hiddenApiExempter.exempt(mContext);
             }
+            QueueWorksWorkFieldHooker queueWorksWorkFieldHooker = new QueueWorksWorkFieldHooker();
+            queueWorksWorkFieldHooker.resetSWorkField();
+        }
+    }
 
-            Method method = QueuedWorkClass.getDeclaredMethod("getHandler");
-            method.setAccessible(true);
+    private static class QueueWorksWorkFieldHooker implements ProxySWork.QueueWorkAspect {
 
-            Handler handler = (android.os.Handler) method.invoke(null);
-            Looper looper = handler.getLooper();
+        private boolean validate =true;
+        private Object lock = null;
+        private  Field sWorkField;
+        private  ProxySWork sWorkProxy;
 
-            Field sWorkField = QueuedWorkClass.getDeclaredField("sWork");
-            sWorkField.setAccessible(true);
+        @SuppressLint("SoonBlockedPrivateApi")
+        public QueueWorksWorkFieldHooker(){
+            try {
+                Class QueuedWorkClass = Class.forName("android.app.QueuedWork");
+                Method method = QueuedWorkClass.getDeclaredMethod("getHandler");
+                method.setAccessible(true);
 
-            Field sProcessingWorkField = QueuedWorkClass.getDeclaredField("sProcessingWork");
-            sProcessingWorkField.setAccessible(true);
-            Object lock = sProcessingWorkField.get(null);
+                Handler handler = (android.os.Handler) method.invoke(null);
+                Looper looper = handler.getLooper();
 
-            LinkedList sWork = (LinkedList) sWorkField.get(null);
-            ProxySWork proxyedsWork = new ProxySWork(sWork, looper);
-            synchronized (lock) {
-                sWorkField.set(null, proxyedsWork);
+                sWorkField = QueuedWorkClass.getDeclaredField("sWork");
+                sWorkField.setAccessible(true);
+                Field sProcessingWorkField = QueuedWorkClass.getDeclaredField("sProcessingWork");
+                sProcessingWorkField.setAccessible(true);
+                lock = sProcessingWorkField.get(null);
+                LinkedList sWork = (LinkedList) sWorkField.get(null);
+                sWorkProxy = new ProxySWork(sWork, looper, this);
+            } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+                validate = false;
             }
 
         }
 
+        public void resetSWorkField(){
+            if (!validate){
+                return;
+            }
+            synchronized (lock){
+                try {
+                    sWorkField.set(null, sWorkProxy);
+                } catch (IllegalAccessException e) {
+                    validate =false;
+                }
+            }
+        }
+
+        @Override
+        public void processPendingWorkDone() {
+            resetSWorkField();
+        }
     }
 
     public static class Builder {
