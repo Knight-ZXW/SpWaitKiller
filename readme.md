@@ -9,9 +9,10 @@ blog介绍:https://www.yuque.com/zhuoxiuwu/brap8y/eo1sgu
 ### 引入依赖
 
 Step 1. 添加依赖
+> 当前版本  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.knight-zxw/spwaitkiller/badge.svg?style=flat)](https://github.com/Knight-ZXW/SpWaitKiller)
 ```
 	dependencies {
-	        implementation 'com.github.Knight-ZXW:SpWaitKiller:0.0.3'
+	        implementation 'com.github.Knight-ZXW:SpWaitKiller:${latestVersion}'
 	}
 ```
 Step 2. 代码开启
