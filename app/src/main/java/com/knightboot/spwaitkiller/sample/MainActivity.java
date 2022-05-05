@@ -2,6 +2,7 @@ package com.knightboot.spwaitkiller.sample;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +22,9 @@ import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends AppCompatActivity {
+
+
+    private static final String TAG ="SpWaitKillerTest";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,18 +53,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mockInsertHeavyWorkToQueuedWork(5);
+
+                Intent intent = new Intent(MainActivity.this,SecondActivity.class);
+                MainActivity.this.startActivity(intent);
             }
         });
 
-
-        findViewById(R.id.jump_to_secondActivity)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(MainActivity.this,SecondActivity.class);
-                        MainActivity.this.startActivity(intent);
-                    }
-                });
     }
 
     @Override
@@ -75,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             method.setAccessible(true);
             Handler handler = (android.os.Handler) method.invoke(null);
             Looper looper = handler.getLooper();
-            Field sWorkField = QueuedWorkClass.getDeclaredField("sWork");
+            @SuppressLint("SoonBlockedPrivateApi") Field sWorkField = QueuedWorkClass.getDeclaredField("sWork");
             sWorkField.setAccessible(true);
 
             LinkedList<Runnable> sWork = (LinkedList) sWorkField.get(null);
@@ -87,28 +85,30 @@ public class MainActivity extends AppCompatActivity {
             Runnable wait = new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("zxw","wait runnable run on thread "+Thread.currentThread().getId()+", is MainThread ? "+
+                    Log.e(TAG,"wait runnable run on thread "+Thread.currentThread().getId()+", is MainThread ? "+
                             ((Thread.currentThread().getId() ==Looper.getMainLooper().getThread().getId())?" true":" false"));
-
                     try {
                         writtenToDiskLatch.await();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    Log.e(TAG,"wait runnable end");
                 }
             };
             finishers.add(wait);
+
             sWork.add(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Log.e("zxw","run work on Thread "+Thread.currentThread().getId());
+                        Log.d(TAG,"run work "+Log.getStackTraceString(new Throwable()));
+                        Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getId()+" begin");
                         Thread.sleep(blockSeconds*1000);
                         writtenToDiskLatch.countDown();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Log.e("zxw","run work on Thread "+Thread.currentThread().getId() +" finish");
+                    Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getId() +" finish");
                 }
             });
             //触发任务执行
