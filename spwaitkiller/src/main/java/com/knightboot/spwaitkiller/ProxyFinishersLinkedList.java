@@ -33,4 +33,9 @@ public class ProxyFinishersLinkedList<T> extends ConcurrentLinkedQueue<T> {
     public boolean remove(@Nullable Object o) {
         return sPendingWorkFinishers.remove(o);
     }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
 }
