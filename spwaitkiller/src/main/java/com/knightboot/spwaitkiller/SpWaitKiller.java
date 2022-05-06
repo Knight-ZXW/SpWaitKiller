@@ -20,7 +20,7 @@ public class SpWaitKiller {
 
     private HiddenApiExempter hiddenApiExempter;
 
-    private boolean worked;
+    private boolean working;
 
     private final boolean neverWaitingFinishQueue;
     private final boolean neverProcessWorkOnMainThread;
@@ -59,11 +59,11 @@ public class SpWaitKiller {
 
     public void work() {
         try {
-            if (worked) {
+            if (working) {
                 return;
             }
             realWork();
-            worked = true;
+            working = true;
         } catch (Exception e) {
             unExpectExceptionCatcher.onException(e);
         }
@@ -97,7 +97,7 @@ public class SpWaitKiller {
                 this.hiddenApiExempter.exempt(mContext);
             }
             QueueWorksWorkFieldHooker queueWorksWorkFieldHooker = new QueueWorksWorkFieldHooker();
-            queueWorksWorkFieldHooker.resetSWorkField();
+            queueWorksWorkFieldHooker.proxyWork();
         }
     }
 
@@ -131,7 +131,7 @@ public class SpWaitKiller {
 
         }
 
-        public void resetSWorkField(){
+        public void proxyWork(){
             if (!validate){
                 return;
             }
@@ -146,7 +146,7 @@ public class SpWaitKiller {
 
         @Override
         public void processPendingWorkDone() {
-            resetSWorkField();
+            proxyWork();
         }
     }
 

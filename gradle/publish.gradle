@@ -116,7 +116,7 @@ afterEvaluate { project ->
     }
 
     signing {
-        required true
+        required hasProperty('signing.password')
         sign configurations.archives
     }
 
