@@ -33,4 +33,9 @@ public class ProxyFinishersList<T> extends LinkedList<T> {
     public boolean remove(@Nullable Object o) {
         return sFinishers.remove(o);
     }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
 }

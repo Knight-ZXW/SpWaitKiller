@@ -80,7 +80,7 @@ class ProxySWork<T> extends LinkedList<T> {
 
     @Override
     public boolean isEmpty() {
-        return proxy.isEmpty();
+        return true;
     }
 
 
