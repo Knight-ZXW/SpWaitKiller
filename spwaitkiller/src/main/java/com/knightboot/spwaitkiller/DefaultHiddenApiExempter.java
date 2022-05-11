@@ -16,7 +16,7 @@ class DefaultHiddenApiExempter  implements HiddenApiExempter{
     @Override
     public boolean exempt(Context context) {
         if (SDK_INT >= Build.VERSION_CODES.P) {
-            return HiddenApiBypass.addHiddenApiExemptions("");
+            return HiddenApiBypass.addHiddenApiExemptions("Landroid/app/QueuedWork;");
         }
         return true;
     }
