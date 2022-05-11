@@ -120,9 +120,9 @@ public class SpWaitKiller {
 
                 sWorkField = QueuedWorkClass.getDeclaredField("sWork");
                 sWorkField.setAccessible(true);
-                Field sProcessingWorkField = QueuedWorkClass.getDeclaredField("sProcessingWork");
-                sProcessingWorkField.setAccessible(true);
-                lock = sProcessingWorkField.get(null);
+                Field sLockField = QueuedWorkClass.getDeclaredField("sLock");
+                sLockField.setAccessible(true);
+                lock = sLockField.get(null);
                 LinkedList sWork = (LinkedList) sWorkField.get(null);
                 sWorkProxy = new ProxySWork(sWork, looper, this);
             } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
