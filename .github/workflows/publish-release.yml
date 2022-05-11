@@ -22,6 +22,11 @@ jobs:
 
       - name: Grant Permission to Execute Gradle
         run: chmod +x gradlew
+      #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
+      - name: Decode
+        run: |
+          echo "${{secrets.SEC_RING_B64}}" > ~/secring.gpg.b64
+          base64 -d ~/secring.gpg.b64 > ~/secring.gpg
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
@@ -29,11 +34,9 @@ jobs:
           arguments: build
       - name: Publish Library
         run: |
-          ./gradlew publish --no-daemon --no-parallel
+          ./gradlew publish -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{ secrets.SIGNING_PASSWORD }} -Psigning.secretKeyRingFile=$(echo ~/secring.gpg)
           ./gradlew closeAndReleaseRepository
         env:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ github.event.inputs.versionName }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

@@ -1,11 +1,11 @@
-name: Chaos CI with Gradle
+name: auto-publish-snapshot
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Version Name'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,14 +33,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
-      - name: Decode
-        run: |
-          echo "${{secrets.GPG_KEY}}" > ~/.gradle/secring.gpg.b64
 
       #Publish project
       - name: Publish
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
         run: ./gradlew publish
