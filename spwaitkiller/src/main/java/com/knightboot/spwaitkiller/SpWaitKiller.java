@@ -101,12 +101,15 @@ public class SpWaitKiller {
         }
     }
 
-    private static class QueueWorksWorkFieldHooker implements ProxySWork.QueueWorkAspect {
+    private static class QueueWorksWorkFieldHooker implements ProxySWork.AboveAndroid12Processor {
 
-        private boolean validate =true;
-        private Object lock = null;
+        private boolean reflectionFailed =false;
+        /**
+         * sLock对象， 操作
+         */
+        private Object sLock = null;
         private  Field sWorkField;
-        private  ProxySWork sWorkProxy;
+        private Looper looper;
 
         @SuppressLint("SoonBlockedPrivateApi")
         public QueueWorksWorkFieldHooker(){
@@ -116,36 +119,40 @@ public class SpWaitKiller {
                 method.setAccessible(true);
 
                 Handler handler = (android.os.Handler) method.invoke(null);
-                Looper looper = handler.getLooper();
+                looper = handler.getLooper();
 
                 sWorkField = QueuedWorkClass.getDeclaredField("sWork");
                 sWorkField.setAccessible(true);
                 Field sLockField = QueuedWorkClass.getDeclaredField("sLock");
                 sLockField.setAccessible(true);
-                lock = sLockField.get(null);
-                LinkedList sWork = (LinkedList) sWorkField.get(null);
-                sWorkProxy = new ProxySWork(sWork, looper, this);
+                sLock = sLockField.get(null);
             } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-                validate = false;
+                reflectionFailed = true;
             }
 
         }
 
-        public void proxyWork(){
-            if (!validate){
+        private void proxyWork(){
+            if (reflectionFailed){
                 return;
             }
-            synchronized (lock){
+            synchronized (sLock){
+                //Android12以下，sWork自始至终是同一个对象
                 try {
+                    LinkedList sWork = (LinkedList) sWorkField.get(null);
+                    ProxySWork sWorkProxy = new ProxySWork(sWork, looper, this);
                     sWorkField.set(null, sWorkProxy);
                 } catch (IllegalAccessException e) {
-                    validate =false;
+                    reflectionFailed =true;
                 }
             }
         }
 
+
         @Override
-        public void processPendingWorkDone() {
+        public void reProxySWork() {
+            //Android12开始,sWork字段在每次执行ProcessPendingWork时，sWork字段都会重新指向一个新的集合对象
+            //因此需要重新代理
             proxyWork();
         }
     }
