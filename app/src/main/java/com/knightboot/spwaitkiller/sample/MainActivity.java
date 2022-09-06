@@ -101,14 +101,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
-                        Log.d(TAG,"run work "+Log.getStackTraceString(new Throwable()));
-                        Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getId()+" begin");
+                        Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getName()+" begin");
                         Thread.sleep(blockSeconds*1000);
                         writtenToDiskLatch.countDown();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getId() +" finish");
+                    Log.e(TAG,"run work "+this+" on Thread "+Thread.currentThread().getName() +" finish");
                 }
             });
             //触发任务执行

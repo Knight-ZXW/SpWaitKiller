@@ -6,7 +6,6 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -17,13 +16,13 @@ class ProxySWork<T> extends LinkedList<T> {
 
     private final Handler sHandler;
 
-    private final QueueWorkAspect queueWorkAspect;
+    private final AboveAndroid12Processor aboveAndroid12Processor;
 
     public ProxySWork(LinkedList<T> proxy,
-                      Looper looper, QueueWorkAspect queueWorkAspect) {
+                      Looper looper, AboveAndroid12Processor aboveAndroid12Processor) {
         this.proxy = proxy;
         sHandler = new Handler(looper);
-        this.queueWorkAspect = queueWorkAspect;
+        this.aboveAndroid12Processor = aboveAndroid12Processor;
     }
 
     // is thread safe
@@ -65,7 +64,7 @@ class ProxySWork<T> extends LinkedList<T> {
         //Android 12 change:
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.S){
             delegateWork();
-            this.queueWorkAspect.processPendingWorkDone();
+            this.aboveAndroid12Processor.reProxySWork();
             return 0;
         }else {
             return proxy.size();
@@ -83,10 +82,15 @@ class ProxySWork<T> extends LinkedList<T> {
         return true;
     }
 
+    /**
+     * Android 12及以上版本的特殊回调处理
+     */
+    interface AboveAndroid12Processor {
 
-    interface QueueWorkAspect {
-
-        public void processPendingWorkDone();
+        /**
+         * 重新代理 sWork字段
+         */
+        public void reProxySWork();
 
     }
 }
