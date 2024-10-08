@@ -23,4 +23,4 @@ Step 2. 代码开启
 ```
 
 ## 兼容性
-Android 5.0 ~ Android 12
+Android 5.0 ~ Android 14
